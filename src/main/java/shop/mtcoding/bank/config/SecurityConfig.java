@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -38,6 +39,13 @@ public class SecurityConfig {
 
         // httpBasic 은 브라우저가 팝업창을 이용해서 사용자 인증을 진행한다
         http.httpBasic().disable();
+
+        // Exception 가로채기 (제어권을 차지하여 일관성 있게 security 에러 처리)
+        http.exceptionHandling().authenticationEntryPoint((request, response, authenticationException) -> {
+            //response.setContentType("application/json; charset=utf-8");
+            response.setStatus(403);
+            response.getWriter().println("error");
+        });
 
         http.authorizeRequests()
                 .antMatchers("/api/s/**").authenticated()
