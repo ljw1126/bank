@@ -11,9 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserEnum;
 import shop.mtcoding.bank.domain.user.UserRepository;
+import shop.mtcoding.bank.dto.user.UserRequestDto;
+import shop.mtcoding.bank.dto.user.UserRequestDto.JoinRequestDto;
+import shop.mtcoding.bank.dto.user.UserResponseDto;
 import shop.mtcoding.bank.handler.CustomApiException;
 
 import java.util.Optional;
+
+import static shop.mtcoding.bank.dto.user.UserResponseDto.*;
 
 @Service
 @RequiredArgsConstructor
@@ -40,36 +45,4 @@ public class UserService {
         return new JoinResponseDto(user);
     }
 
-    @Setter
-    @Getter
-    public static class JoinResponseDto {
-        private Long id;
-        private String username;
-        private String fullname;
-
-        public JoinResponseDto(User user) {
-            this.id = user.getId();
-            this.username = user.getUsername();
-            this.fullname = user.getFullname();
-        }
-    }
-
-    @Setter
-    @Getter
-    public static class JoinRequestDto {
-        private String username;
-        private String password;
-        private String email;
-        private String fullname;
-
-        public User toEntity(BCryptPasswordEncoder passwordEncoder) {
-            return User.builder()
-                    .username(username)
-                    .password(password)
-                    .email(email)
-                    .fullname(passwordEncoder.encode(password))
-                    .role(UserEnum.CUSTOMER)
-                    .build();
-        }
-    }
 }
