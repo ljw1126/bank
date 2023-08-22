@@ -2,6 +2,7 @@ package shop.mtcoding.bank.service;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,7 +25,7 @@ public class UserService {
 
     // 서비스는 dto로 요청받고 응답한다
     @Transactional
-    public JointRespDto 회원가입(JoinReqDto joinReqDto) {
+    public JoinResponseDto 회원가입(JoinRequestDto joinReqDto) {
         // 1. 동일 유저 네임 존재 검사
         Optional<User> userOptional = userRepository.findByUsername(joinReqDto.getUsername());
 
@@ -36,24 +37,26 @@ public class UserService {
         User user = userRepository.save(joinReqDto.toEntity(passwordEncoder));
 
         // 3. dto 응답
-        return new JointRespDto(user);
+        return new JoinResponseDto(user);
     }
 
+    @Setter
     @Getter
-    public static class JointRespDto {
+    public static class JoinResponseDto {
         private Long id;
         private String username;
         private String fullname;
 
-        public JointRespDto(User user) {
+        public JoinResponseDto(User user) {
             this.id = user.getId();
             this.username = user.getUsername();
             this.fullname = user.getFullname();
         }
     }
 
+    @Setter
     @Getter
-    public static class JoinReqDto {
+    public static class JoinRequestDto {
         private String username;
         private String password;
         private String email;
