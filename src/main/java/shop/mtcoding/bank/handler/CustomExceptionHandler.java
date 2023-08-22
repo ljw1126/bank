@@ -18,4 +18,10 @@ public class CustomExceptionHandler {
         log.error(e.getMessage());
         return new ResponseEntity<>(new ResponseDto<>(-1, e.getMessage(), null), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(CustomValidationException.class)
+    public ResponseEntity<?> validationException(CustomValidationException e) {
+        log.error(e.getMessage());
+        return new ResponseEntity<>(new ResponseDto<>(-1, e.getMessage(), e.getErrorMap()), HttpStatus.BAD_REQUEST);
+    }
 }
