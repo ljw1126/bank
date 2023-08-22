@@ -17,7 +17,7 @@ public class UserRequestDto {
     @NoArgsConstructor
     public static class JoinRequestDto {
         @NotEmpty // null이거나 공백일 수 없다
-        @Pattern(regexp = "^[ㄱ-ㅎ가-힣0-9a-zA-Z]{2,20}$", message = "영문/숫자 2~20자 이내로 작성해주세요")
+        @Pattern(regexp = "^[0-9a-zA-Z]{2,20}$", message = "영문/숫자 2~20자 이내로 작성해주세요")
         private String username;
 
         @NotEmpty
@@ -35,9 +35,9 @@ public class UserRequestDto {
         public User toEntity(BCryptPasswordEncoder passwordEncoder) {
             return User.builder()
                     .username(username)
-                    .password(password)
+                    .password(passwordEncoder.encode(password))
                     .email(email)
-                    .fullname(passwordEncoder.encode(password))
+                    .fullname(fullname)
                     .role(UserEnum.CUSTOMER)
                     .build();
         }
