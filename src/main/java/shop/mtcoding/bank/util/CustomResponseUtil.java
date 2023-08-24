@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import shop.mtcoding.bank.dto.ResponseDto;
 
 import javax.servlet.http.HttpServletResponse;
@@ -27,14 +28,14 @@ public class CustomResponseUtil {
     }
 
     // 인증 실패
-    public static void unAuthentication(HttpServletResponse response, String msg) {
+    public static void fail(HttpServletResponse response, String msg, HttpStatus status) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             ResponseDto<?> responseDto = new ResponseDto<>(-1, msg, null);
             String responseBody = objectMapper.writeValueAsString(responseDto);
 
             response.setContentType("application/json; charset=utf-8");
-            response.setStatus(401);
+            response.setStatus(status.value());
             response.getWriter().println(responseBody);
         } catch(Exception e) {
             log.error(e.getMessage());
