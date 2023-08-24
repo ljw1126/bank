@@ -24,4 +24,10 @@ public class CustomExceptionHandler {
         log.error(e.getMessage());
         return new ResponseEntity<>(new ResponseDto<>(-1, e.getMessage(), e.getErrorMap()), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(CustomForbiddenException.class)
+    public ResponseEntity<?> customForbiddenException(CustomForbiddenException e) {
+        log.error(e.getMessage());
+        return new ResponseEntity<>(new ResponseDto<>(-1, e.getMessage(), null), HttpStatus.FORBIDDEN);
+    }
 }
