@@ -1,7 +1,6 @@
 package shop.mtcoding.bank.config.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import shop.mtcoding.bank.config.dummy.DummyObject;
@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static shop.mtcoding.bank.dto.user.UserRequestDto.LoginRequestDto;
 
+@Sql("classpath:/db/teardown.sql") //@BeforeEach 직전에 실행
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK) // 가짜 환경에 컴포넌트 스캔해서 주입
@@ -38,11 +39,6 @@ class JwtAuthenticationFilterTest extends DummyObject {
     @BeforeEach
     void setUp() {
         userRepository.save(newUser("aaaa", "1234"));
-    }
-
-    @AfterEach
-    void tearDown() {
-        userRepository.deleteAllInBatch(); // @Transactional 클래스에 붙여서 rollback 해도 된다
     }
 
     @DisplayName("로그인 성공할 경우 jwt token 을 header에 담아 응답한다")

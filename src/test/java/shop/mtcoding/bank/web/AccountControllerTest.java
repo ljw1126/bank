@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import shop.mtcoding.bank.config.dummy.DummyObject;
@@ -34,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountSaveRequestDto;
 
+@Sql("classpath:/db/teardown.sql")
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -58,12 +60,6 @@ class AccountControllerTest extends DummyObject {
     void setUp() {
         dateSetting();
         em.clear(); // 영속성 컨텍스트 비움
-    }
-
-    @AfterEach
-    void tearDown() {
-        accountRepository.deleteAllInBatch();
-        userRepository.deleteAllInBatch();
     }
 
     // jwt token -> 인증 필터 -> 시큐리티 세션 생성
