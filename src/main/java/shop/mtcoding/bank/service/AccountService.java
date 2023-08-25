@@ -132,10 +132,11 @@ public class AccountService {
             private String sender;
             private String reciver;
             private Long amount;
-            @JsonIgnore
-            private Long depositAccountBalance;
             private String tel;
             private String createAt;
+
+            @JsonIgnore
+            private Long depositAccountBalance;
 
             public TransactionDto(Transaction transaction) {
                 this.id = transaction.getId();
