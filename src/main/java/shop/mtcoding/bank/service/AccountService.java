@@ -28,7 +28,7 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
 
-    public AccountListResponseDto getAccountList(Long userId) {
+    public AccountListResponseDto findUserAccount(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new CustomApiException("유저를 찾을 수 없습니다"));
 
         // 유저가 소유한 모든 계좌 목록
