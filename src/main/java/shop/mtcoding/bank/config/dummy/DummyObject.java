@@ -1,6 +1,7 @@
 package shop.mtcoding.bank.config.dummy;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import shop.mtcoding.bank.domain.account.Account;
 import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserEnum;
 
@@ -33,6 +34,28 @@ public class DummyObject {
                 .email(username + "@gmail.com")
                 .fullname(fullname)
                 .role(UserEnum.CUSTOMER)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+    }
+
+    protected Account newMockAccount(Long number, User user) {
+        return Account.builder()
+                .number(number)
+                .password(1234L)
+                .balance(1000L)
+                .user(user)
+                .build();
+    }
+
+    protected Account newMockAccount(Long id, Long number, Long balance, User user) {
+        LocalDateTime now = LocalDateTime.now();
+        return Account.builder()
+                .id(id)
+                .number(number)
+                .password(1234L)
+                .balance(balance)
+                .user(user)
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
