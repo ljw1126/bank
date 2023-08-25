@@ -52,4 +52,10 @@ class UserControllerTest extends DummyObject {
 }
 ```
 
+## 계좌 입금 (AccountService)
+> ATM -> 계좌로 입금 가정
+1) 0원 체크
+2) 입금 계좌 확인
+3) 입금 
+4) 거래내역 남기기
  
