@@ -39,7 +39,7 @@ public class DummyObject {
                 .build();
     }
 
-    protected Account newAccount(Long number, User user) {
+    protected Account newMockAccount(Long number, User user) {
         return Account.builder()
                 .number(number)
                 .password(1234L)
@@ -48,7 +48,7 @@ public class DummyObject {
                 .build();
     }
 
-    protected Account newAccount(Long id, Long number, Long balance, User user) {
+    protected Account newMockAccount(Long id, Long number, Long balance, User user) {
         LocalDateTime now = LocalDateTime.now();
         return Account.builder()
                 .id(id)
