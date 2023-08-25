@@ -2,7 +2,6 @@ package shop.mtcoding.bank.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,7 +58,7 @@ class AccountServiceTest extends DummyObject {
         when(accountRepository.findByNumber(any())).thenReturn(Optional.empty());
 
         //stub3
-        Account mockAccount = newMockAccount(1L, 1111L, 1000L, dummyUser);
+        Account mockAccount = newAccount(1L, 1111L, 1000L, dummyUser);
         when(accountRepository.save(any())).thenReturn(mockAccount);
 
         //when
@@ -100,7 +99,7 @@ class AccountServiceTest extends DummyObject {
         when(userRepository.findById(any())).thenReturn(Optional.of(mockUser));
 
         //stub
-        Account dummyAccount = newMockAccount(accountNumber, mockUser);
+        Account dummyAccount = newAccount(accountNumber, mockUser);
         when(accountRepository.findByNumber(any())).thenReturn(Optional.of(dummyAccount));
 
 
