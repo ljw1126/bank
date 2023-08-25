@@ -1,6 +1,7 @@
 package shop.mtcoding.bank.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,10 +19,14 @@ import shop.mtcoding.bank.domain.account.Account;
 import shop.mtcoding.bank.domain.account.AccountRepository;
 import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserRepository;
+import shop.mtcoding.bank.handler.CustomApiException;
+
+import javax.persistence.EntityManager;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.security.test.context.support.TestExecutionEvent.TEST_EXECUTION;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -46,9 +51,13 @@ class AccountControllerTest extends DummyObject {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private EntityManager em;
+
     @BeforeEach
     void setUp() {
         dateSetting();
+        em.clear(); // 영속성 컨텍스트 비움
     }
 
     @AfterEach
@@ -100,6 +109,45 @@ class AccountControllerTest extends DummyObject {
                 .andExpect(jsonPath("$.data.accounts.length()", is(2)));
     }
 
+    @DisplayName("")
+    @WithUserDetails(value = "ssar", setupBefore = TEST_EXECUTION)
+    @Test
+    void deleteAccount() throws Exception{
+        //given
+        Long number = 1111L;
+
+        //when
+        ResultActions resultActions = mockMvc.perform(delete("/api/s/account/" + number));
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        System.out.println(responseBody);
+
+        //then
+        //JUnit 테스트에서 delete 쿼리는 DB관련(DML)으로 가장 마지막에 실행되면 발동안함
+        Assertions.assertThatThrownBy(() -> accountRepository.findByNumber(number).orElseThrow(() -> new CustomApiException("계좌를 찾을 수 없습니다")))
+                .isInstanceOf(CustomApiException.class)
+                .hasMessage("계좌를 찾을 수 없습니다");
+    }
+
+    /**
+     * 테스트 시에 insert한 데이터는 전부 Persistence Context에 올라감 (영속화)
+     * 영속화 초기화 해주는 것이 개발 모드와 동일한 환경으로 테스트를 할 수 있게 해준다.
+     * Lazy 로딩은 P.C에 있다면 쿼리 발생하지 않고, 없다면 쿼리 발생한다
+     */
+    @DisplayName("")
+    @WithUserDetails(value = "cos", setupBefore = TEST_EXECUTION)
+    @Test
+    void deleteAccountWhenNotOwnAccount() throws Exception{
+        //given
+        Long number = 1111L; // ssar account
+
+        //when
+        ResultActions resultActions = mockMvc.perform(delete("/api/s/account/" + number));
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        System.out.println(responseBody);
+
+        //then
+
+    }
 
     private void dateSetting() {
         User ssar = userRepository.save(newUser("ssar", "쌀"));
