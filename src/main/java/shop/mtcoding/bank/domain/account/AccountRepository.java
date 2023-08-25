@@ -8,6 +8,6 @@ import java.util.Optional;
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
-    // TODO. 리팩토링
+    // TODO. 리팩토링, 계좌/소유자 확인시에 쿼리가 두번 나가기 때문에
     Optional<Account> findByNumber(Long number);
 }
