@@ -63,7 +63,7 @@ public class Account {
     }
 
     public void checkOwner(Long userId) {
-        if(user.getId() != userId) {
+        if(user.getId() != userId) { // Lazy Loading 이어도 id를 조회할때는 select 쿼리가 발생하지 않는다
             throw new CustomApiException("계좌 소유자가 아닙니다");
         }
     }
