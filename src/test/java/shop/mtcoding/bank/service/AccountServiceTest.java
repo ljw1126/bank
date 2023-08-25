@@ -2,6 +2,7 @@ package shop.mtcoding.bank.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,7 +59,7 @@ class AccountServiceTest extends DummyObject {
         when(accountRepository.findByNumber(any())).thenReturn(Optional.empty());
 
         //stub3
-        Account mockAccount = newAccount(1L, 1111L, 1000L, dummyUser);
+        Account mockAccount = newMockAccount(1L, 1111L, 1000L, dummyUser);
         when(accountRepository.save(any())).thenReturn(mockAccount);
 
         //when
@@ -99,12 +100,31 @@ class AccountServiceTest extends DummyObject {
         when(userRepository.findById(any())).thenReturn(Optional.of(mockUser));
 
         //stub
-        Account dummyAccount = newAccount(accountNumber, mockUser);
+        Account dummyAccount = newMockAccount(accountNumber, mockUser);
         when(accountRepository.findByNumber(any())).thenReturn(Optional.of(dummyAccount));
 
 
         assertThatThrownBy(() -> accountService.saveAccount(accountSaveRequestDto, userId))
                 .isInstanceOf(CustomApiException.class)
                 .hasMessage("해당 계좌가 이미 존재합니다");
+    }
+
+    @DisplayName("다른 유저가 본인 명의 아닌 계좌 삭제 시도할 경우 에러가 발생한다")
+    @Test
+    void deleteAccountWhenNotEqualsUserId() throws Exception {
+        //given
+        Long number = 1111L;
+        Long userId = 2L;
+
+        //stub
+        User user = newMockUser(1L, "ssar", "쌀");
+        Account ssarAccount = newMockAccount(1L, 111L, 1000L, user);
+        when(accountRepository.findByNumber(any())).thenReturn(Optional.of(ssarAccount));
+
+        //when
+        //then
+        assertThatThrownBy(() -> accountService.deleteAccount(number, userId))
+                .isInstanceOf(CustomApiException.class)
+                .hasMessage("계좌 소유자가 아닙니다");
     }
 }

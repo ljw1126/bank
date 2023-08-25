@@ -1,20 +1,17 @@
 package shop.mtcoding.bank.service;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.mtcoding.bank.domain.account.Account;
 import shop.mtcoding.bank.domain.account.AccountRepository;
 import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserRepository;
+import shop.mtcoding.bank.dto.account.AccountResponseDto.AccountListResponseDto;
 import shop.mtcoding.bank.handler.CustomApiException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountSaveRequestDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountSaveResponseDto;
@@ -36,32 +33,6 @@ public class AccountService {
         return new AccountListResponseDto(user, accountList);
     }
 
-    @Getter
-    @Setter
-    public static class AccountListResponseDto {
-        private String fullname;
-        private List<AccountDto> accounts = new ArrayList<>();
-
-        public AccountListResponseDto(User user, List<Account> accounts) {
-            this.fullname = user.getFullname();
-            this.accounts = accounts.stream().map(AccountDto::new).collect(Collectors.toList());
-        }
-
-        @Setter
-        @Getter
-        public class AccountDto {
-            private Long id;
-            private Long number;
-            private Long balance;
-
-            public AccountDto(Account account) {
-                this.id = account.getId();
-                this.number = account.getNumber();
-                this.balance = account.getBalance();
-            }
-        }
-    }
-
     @Transactional
     public AccountSaveResponseDto saveAccount(AccountSaveRequestDto accountSaveRequestDto, Long userId) {
         // User 검증
@@ -81,4 +52,18 @@ public class AccountService {
         // DTO 응답
         return new AccountSaveResponseDto(account);
     }
+
+    @Transactional
+    public void deleteAccount(Long number, Long userId) {
+        // 계좌 확인
+        Account account = accountRepository.findByNumber(number).orElseThrow(
+                () -> new CustomApiException("계좌를 찾을 수 없습니다.")
+        );
+
+        // 계좌 소유자 확인
+        account.checkOwner(userId);
+
+        accountRepository.deleteById(account.getId());
+    }
+
 }
