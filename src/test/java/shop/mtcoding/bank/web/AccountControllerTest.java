@@ -2,10 +2,13 @@ package shop.mtcoding.bank.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,6 +24,7 @@ import shop.mtcoding.bank.domain.account.AccountRepository;
 import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserRepository;
 import shop.mtcoding.bank.handler.CustomApiException;
+import shop.mtcoding.bank.service.AccountService.AccountDepositRequestDto;
 
 import javax.persistence.EntityManager;
 
@@ -60,6 +64,18 @@ class AccountControllerTest extends DummyObject {
     void setUp() {
         dateSetting();
         em.clear(); // 영속성 컨텍스트 비움
+    }
+
+    private void dateSetting() {
+        User ssar = userRepository.save(newUser("ssar", "쌀"));
+        User cos = userRepository.save(newUser("cos", "코스,"));
+        User love = userRepository.save(newUser("love", "러브"));
+        User admin = userRepository.save(newUser("admin", "관리자"));
+
+        Account ssarAccount1 = accountRepository.save(newMockAccount(1111L, ssar));
+        Account cosAccount = accountRepository.save(newMockAccount(2222L, cos));
+        Account loveAccount = accountRepository.save(newMockAccount(3333L, love));
+        Account ssarAccount2 = accountRepository.save(newMockAccount(4444L, ssar));
     }
 
     // jwt token -> 인증 필터 -> 시큐리티 세션 생성
@@ -108,7 +124,7 @@ class AccountControllerTest extends DummyObject {
     @DisplayName("")
     @WithUserDetails(value = "ssar", setupBefore = TEST_EXECUTION)
     @Test
-    void deleteAccount() throws Exception{
+    void deleteAccount() throws Exception {
         //given
         Long number = 1111L;
 
@@ -132,7 +148,7 @@ class AccountControllerTest extends DummyObject {
     @DisplayName("")
     @WithUserDetails(value = "cos", setupBefore = TEST_EXECUTION)
     @Test
-    void deleteAccountWhenNotOwnAccount() throws Exception{
+    void deleteAccountWhenNotOwnAccount() throws Exception {
         //given
         Long number = 1111L; // ssar account
 
@@ -145,15 +161,125 @@ class AccountControllerTest extends DummyObject {
 
     }
 
-    private void dateSetting() {
-        User ssar = userRepository.save(newUser("ssar", "쌀"));
-        User cos = userRepository.save(newUser("cos", "코스,"));
-        User love = userRepository.save(newUser("love", "러브"));
-        User admin = userRepository.save(newUser("admin", "관리자"));
+    @Nested
+    @DisplayName("계좌 입금 테스트")
+    @TestMethodOrder(MethodOrderer.MethodName.class)
+    class AccountDeposit {
+        @DisplayName("ATM -> 계좌입금 성공 테스트")
+        @Test
+        @Order(1)
+        void successAccountDeposit() throws Exception {
+            //given
+            AccountDepositRequestDto accountDepositRequestDto = new AccountDepositRequestDto();
+            accountDepositRequestDto.setNumber(1111L);
+            accountDepositRequestDto.setAmount(1000L);
+            accountDepositRequestDto.setGubun("DEPOSIT");
+            accountDepositRequestDto.setTel("01012345678");
 
-        Account ssarAccount1 = accountRepository.save(newMockAccount(1111L, ssar));
-        Account cosAccount = accountRepository.save(newMockAccount(2222L, cos));
-        Account loveAccount = accountRepository.save(newMockAccount(3333L, love));
-        Account ssarAccount2 = accountRepository.save(newMockAccount(4444L, ssar));
+            //when
+            ResultActions resultActions = mockMvc.perform(post("/api/account/deposit")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(accountDepositRequestDto))
+            );
+
+            //then
+            resultActions.andDo(print())
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.code").value("1"))
+                    .andExpect(jsonPath("$.msg").value("계좌 입금 완료"))
+                    .andExpect(jsonPath("$.data.number").value("1111"));
+
+        }
+
+        @DisplayName("0원 이하의 금액을 입금할 수 없습니다")
+        @Test
+        @Order(2)
+        void unSuccessAccountDeposit1() throws Exception {
+            //given
+            AccountDepositRequestDto accountDepositRequestDto = new AccountDepositRequestDto();
+            accountDepositRequestDto.setNumber(1111L);
+            accountDepositRequestDto.setAmount(0L);
+            accountDepositRequestDto.setGubun("DEPOSIT");
+            accountDepositRequestDto.setTel("01012345678");
+
+            //when
+            //then
+            mockMvc.perform(post("/api/account/deposit")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(accountDepositRequestDto))
+                    ).andDo(print())
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("-1"))
+                    .andExpect(jsonPath("$.msg").value("0원 이하의 금액을 입금할 수 없습니다"))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+        @DisplayName("계좌를 찾을 수 없습니다")
+        @Test
+        @Order(3)
+        void unSuccessAccountDeposit2() throws Exception {
+            //given
+            AccountDepositRequestDto accountDepositRequestDto = new AccountDepositRequestDto();
+            accountDepositRequestDto.setNumber(9999L);
+            accountDepositRequestDto.setAmount(1000L);
+            accountDepositRequestDto.setGubun("DEPOSIT");
+            accountDepositRequestDto.setTel("01012345678");
+
+            //when
+            //then
+            mockMvc.perform(post("/api/account/deposit")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(accountDepositRequestDto))
+                    ).andDo(print())
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("-1"))
+                    .andExpect(jsonPath("$.msg").value("계좌를 찾을 수 없습니다"))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+        @DisplayName("gubun은 DEPOSIT만 가능합니다")
+        @Test
+        @Order(4)
+        void unSuccessAccountDeposit3() throws Exception {
+            //given
+            AccountDepositRequestDto accountDepositRequestDto = new AccountDepositRequestDto();
+            accountDepositRequestDto.setNumber(1111L);
+            accountDepositRequestDto.setAmount(1000L);
+            accountDepositRequestDto.setGubun("WITHDROW");
+            accountDepositRequestDto.setTel("01012345678");
+
+            //when
+            //then
+            mockMvc.perform(post("/api/account/deposit")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(accountDepositRequestDto))
+                    ).andDo(print())
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("-1"))
+                    .andExpect(jsonPath("$.msg").value("유효성 검사 실패"));
+        }
+
+        @DisplayName("tel은 11자리 숫자여야 합니다")
+        @Test
+        @Order(5)
+        void unSuccessAccountDeposit4() throws Exception {
+            //given
+            AccountDepositRequestDto accountDepositRequestDto = new AccountDepositRequestDto();
+            accountDepositRequestDto.setNumber(1111L);
+            accountDepositRequestDto.setAmount(1000L);
+            accountDepositRequestDto.setGubun("DEPOSIT");
+            accountDepositRequestDto.setTel("0101234567899999999");
+
+            //when
+            //then
+            mockMvc.perform(post("/api/account/deposit")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(accountDepositRequestDto))
+                    ).andDo(print())
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("-1"))
+                    .andExpect(jsonPath("$.msg").value("유효성 검사 실패"));
+
+        }
     }
 }
