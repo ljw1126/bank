@@ -18,6 +18,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import shop.mtcoding.bank.config.dummy.DummyObject;
 import shop.mtcoding.bank.domain.account.Account;
 import shop.mtcoding.bank.domain.account.AccountRepository;
@@ -35,9 +37,12 @@ import static org.springframework.security.test.context.support.TestExecutionEve
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static shop.mtcoding.bank.dto.account.AccountRequestDto.*;
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountSaveRequestDto;
 
 @Sql("classpath:/db/teardown.sql")
@@ -282,5 +287,29 @@ class AccountControllerTest extends DummyObject {
                     .andExpect(jsonPath("$.msg").value("유효성 검사 실패"));
 
         }
+    }
+
+    @WithUserDetails(value = "ssar", setupBefore = TEST_EXECUTION)
+    @DisplayName("ATM - 본인 계좌 출금")
+    @Test
+    void accountWithdraw() throws Exception {
+        //given
+        AccountWithdrawRequestDto requestDto = new AccountWithdrawRequestDto();
+        requestDto.setNumber(1111L);
+        requestDto.setPassword(1234L);
+        requestDto.setGubun("WITHDRAW");
+        requestDto.setAmount(100L);
+
+        String requestBody = objectMapper.writeValueAsString(requestDto);
+
+        //when then
+        mockMvc.perform(post("/api/s/account/withdraw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)
+                ).andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.code").value("1"))
+                .andExpect(jsonPath("$.msg").value("계좌 출금 완료"))
+                .andExpect(jsonPath("$.data.balance").value("900"));
     }
 }
