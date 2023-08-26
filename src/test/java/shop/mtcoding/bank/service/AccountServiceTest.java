@@ -4,7 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -71,60 +74,66 @@ class AccountServiceTest extends DummyObject {
         assertThat(responseDto.getNumber()).isEqualTo(1111L);
     }
 
-    @DisplayName("신규 계좌 등록시 해당되는 userId가 없는 경우 에러를 출력한다")
-    @Test
-    void saveAccountWhenUnAuthenticationUserId() throws JsonProcessingException {
-        long userId = 9999L;
+    @Nested
+    @DisplayName("신규 계좌 생성시 예외 케이스 테스트")
+    @TestMethodOrder(MethodOrderer.MethodName.class)
+    class SaveAccountException {
 
-        AccountSaveRequestDto accountSaveRequestDto = new AccountSaveRequestDto();
-        accountSaveRequestDto.setNumber(1111L); // 계좌 번호
-        accountSaveRequestDto.setPassword(1234L);
+        @DisplayName("신규 계좌 등록시 해당되는 userId가 없는 경우 에러를 출력한다")
+        @Test
+        void saveAccountWhenUnAuthenticationUserId() throws JsonProcessingException {
+            long userId = 9999L;
 
-        assertThatThrownBy(() -> accountService.saveAccount(accountSaveRequestDto, userId))
-                .isInstanceOf(CustomApiException.class)
-                .hasMessage("유저를 찾을 수 없습니다");
-    }
+            AccountSaveRequestDto accountSaveRequestDto = new AccountSaveRequestDto();
+            accountSaveRequestDto.setNumber(1111L); // 계좌 번호
+            accountSaveRequestDto.setPassword(1234L);
 
-    @DisplayName("신규 계좌 등록시 중복 계좌 번호가 있으면 에러를 출력한다")
-    @Test
-    void saveAccountWhenDuplicatedAccount() throws JsonProcessingException {
-        long userId = 1L;
-        long accountNumber = 1111L;
+            assertThatThrownBy(() -> accountService.saveAccount(accountSaveRequestDto, userId))
+                    .isInstanceOf(CustomApiException.class)
+                    .hasMessage("유저를 찾을 수 없습니다");
+        }
 
-        AccountSaveRequestDto accountSaveRequestDto = new AccountSaveRequestDto();
-        accountSaveRequestDto.setNumber(accountNumber); // 계좌 번호
-        accountSaveRequestDto.setPassword(1234L);
+        @DisplayName("신규 계좌 등록시 중복 계좌 번호가 있으면 에러를 출력한다")
+        @Test
+        void saveAccountWhenDuplicatedAccount() throws JsonProcessingException {
+            long userId = 1L;
+            long accountNumber = 1111L;
 
-        //stub
-        User mockUser = newMockUser(1L, "aaaa", "에에에에");
-        when(userRepository.findById(any())).thenReturn(Optional.of(mockUser));
+            AccountSaveRequestDto accountSaveRequestDto = new AccountSaveRequestDto();
+            accountSaveRequestDto.setNumber(accountNumber); // 계좌 번호
+            accountSaveRequestDto.setPassword(1234L);
 
-        //stub
-        Account dummyAccount = newMockAccount(accountNumber, mockUser);
-        when(accountRepository.findByNumber(any())).thenReturn(Optional.of(dummyAccount));
+            //stub
+            User mockUser = newMockUser(1L, "aaaa", "에에에에");
+            when(userRepository.findById(any())).thenReturn(Optional.of(mockUser));
+
+            //stub
+            Account dummyAccount = newMockAccount(accountNumber, mockUser);
+            when(accountRepository.findByNumber(any())).thenReturn(Optional.of(dummyAccount));
 
 
-        assertThatThrownBy(() -> accountService.saveAccount(accountSaveRequestDto, userId))
-                .isInstanceOf(CustomApiException.class)
-                .hasMessage("해당 계좌가 이미 존재합니다");
-    }
+            assertThatThrownBy(() -> accountService.saveAccount(accountSaveRequestDto, userId))
+                    .isInstanceOf(CustomApiException.class)
+                    .hasMessage("해당 계좌가 이미 존재합니다");
+        }
 
-    @DisplayName("다른 유저가 본인 명의 아닌 계좌 삭제 시도할 경우 에러가 발생한다")
-    @Test
-    void deleteAccountWhenNotEqualsUserId() throws Exception {
-        //given
-        Long number = 1111L;
-        Long userId = 2L;
+        @DisplayName("다른 유저가 본인 명의 아닌 계좌 삭제 시도할 경우 에러가 발생한다")
+        @Test
+        void deleteAccountWhenNotEqualsUserId() throws Exception {
+            //given
+            Long number = 1111L;
+            Long userId = 2L;
 
-        //stub
-        User user = newMockUser(1L, "ssar", "쌀");
-        Account ssarAccount = newMockAccount(1L, 111L, 1000L, user);
-        when(accountRepository.findByNumber(any())).thenReturn(Optional.of(ssarAccount));
+            //stub
+            User user = newMockUser(1L, "ssar", "쌀");
+            Account ssarAccount = newMockAccount(1L, 111L, 1000L, user);
+            when(accountRepository.findByNumber(any())).thenReturn(Optional.of(ssarAccount));
 
-        //when
-        //then
-        assertThatThrownBy(() -> accountService.deleteAccount(number, userId))
-                .isInstanceOf(CustomApiException.class)
-                .hasMessage("계좌 소유자가 아닙니다");
+            //when
+            //then
+            assertThatThrownBy(() -> accountService.deleteAccount(number, userId))
+                    .isInstanceOf(CustomApiException.class)
+                    .hasMessage("계좌 소유자가 아닙니다");
+        }
     }
 }
