@@ -14,16 +14,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import shop.mtcoding.bank.config.auth.LoginUser;
 import shop.mtcoding.bank.dto.ResponseDto;
-import shop.mtcoding.bank.dto.account.AccountRequestDto;
 import shop.mtcoding.bank.dto.account.AccountRequestDto.AccountSaveRequestDto;
 import shop.mtcoding.bank.service.AccountService;
 
 import javax.validation.Valid;
 
-import static shop.mtcoding.bank.dto.account.AccountRequestDto.*;
+import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountDepositRequestDto;
+import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountWithdrawRequestDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountDepositResponseDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountListResponseDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountSaveResponseDto;
+import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountWithdrawResponseDto;
 
 @RestController
 @RequestMapping("/api")
@@ -59,5 +60,14 @@ public class AccountController {
     ) {
         AccountDepositResponseDto response = accountService.accountDeposit(accountSaveRequestDto);
         return new ResponseEntity<>(new ResponseDto<>(1, "계좌 입금 완료", response), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/s/account/withdraw")
+    public ResponseEntity<ResponseDto> accountWithdraw(@RequestBody @Valid AccountWithdrawRequestDto withdrawRequestDto
+            , BindingResult bindingResult
+            , @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        AccountWithdrawResponseDto response = accountService.accountWithdraw(withdrawRequestDto, loginUser.getUser().getId());
+        return new ResponseEntity<>(new ResponseDto<>(1, "계좌 출금 완료", response), HttpStatus.CREATED);
     }
 }

@@ -1,36 +1,28 @@
 package shop.mtcoding.bank.service;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.mtcoding.bank.domain.account.Account;
 import shop.mtcoding.bank.domain.account.AccountRepository;
 import shop.mtcoding.bank.domain.transaction.Transaction;
-import shop.mtcoding.bank.domain.transaction.TransactionEnum;
 import shop.mtcoding.bank.domain.transaction.TransactionRepository;
 import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserRepository;
-import shop.mtcoding.bank.dto.account.AccountRequestDto;
-import shop.mtcoding.bank.dto.account.AccountResponseDto;
 import shop.mtcoding.bank.dto.account.AccountResponseDto.AccountListResponseDto;
 import shop.mtcoding.bank.handler.CustomApiException;
-import shop.mtcoding.bank.util.CustomDateUtil;
 
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import java.util.List;
 import java.util.Optional;
 
-import static shop.mtcoding.bank.domain.transaction.TransactionEnum.*;
-import static shop.mtcoding.bank.dto.account.AccountRequestDto.*;
+import static shop.mtcoding.bank.domain.transaction.TransactionEnum.DEPOSIT;
+import static shop.mtcoding.bank.domain.transaction.TransactionEnum.WITHDRAW;
+import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountDepositRequestDto;
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountSaveRequestDto;
-import static shop.mtcoding.bank.dto.account.AccountResponseDto.*;
+import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountWithdrawRequestDto;
+import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountDepositResponseDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountSaveResponseDto;
+import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountWithdrawResponseDto;
 
 @Service
 @Transactional(readOnly = true)
@@ -154,26 +146,6 @@ public class AccountService {
 
         // DTO 응답
         return new AccountWithdrawResponseDto(withdrawAccount, transactionResult);
-    }
-
-    @Getter
-    @Setter
-    public static class AccountWithdrawRequestDto {
-        @NotNull
-        @Digits(integer = 4, fraction = 4)
-        private Long number; // 계좌 번호
-
-        @NotNull
-        @Digits(integer = 4, fraction = 4)
-        private Long password;
-
-        @NotNull // 0원 유효성
-        private Long amount;
-
-        @NotEmpty
-        @Pattern(regexp = "^(WITHDRAW)$")
-        private String gubun;
-
     }
 
 }
