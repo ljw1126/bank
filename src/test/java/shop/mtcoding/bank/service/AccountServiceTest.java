@@ -31,6 +31,7 @@ import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountDepositReq
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountSaveRequestDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountDepositResponseDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountSaveResponseDto;
+import static shop.mtcoding.bank.service.AccountService.*;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest extends DummyObject {
@@ -216,7 +217,31 @@ class AccountServiceTest extends DummyObject {
     }
 
 
-    // TODO. 계좌 출금
+    // Trasacation, DTO 생성은 서비스 책임이 아니라 넘어감
+    @DisplayName("")
+    @Test
+    void accountWithdraw() {
+        //given
+        Long amount = 100L;
+        Long userId = 1L;
+        Long password = 1234L;
+
+        User ssar = newMockUser(1L, "ssar", "쌀");
+        Account ssarAccount = newMockAccount(1L, 1111L, 1000L, ssar);
+
+        //when
+        if(amount <= 0L) {
+            throw new CustomApiException("0원 이하의 금액을 입금할 수 없습니다");
+        }
+
+        ssarAccount.checkOwner(userId);
+        ssarAccount.checkSamePassword(password);
+        //ssarAccount.checkBalance(amount);
+        ssarAccount.withdraw(amount);
+
+        //then
+        assertThat(ssarAccount.getBalance()).isEqualTo(900L);
+    }
 
     // TODO. 계좌 이체
 
