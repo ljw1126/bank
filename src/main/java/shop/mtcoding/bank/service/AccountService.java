@@ -104,7 +104,7 @@ public class AccountService {
                 .depositAccountBalance(depositAccount.getBalance())
                 .withdrawAccount(null)
                 .withdrawAccountBalance(null)
-                .amount(requestDto.getAmount())
+                .amount(requestDto.getAmount()) // 입금 금액
                 .gubun(DEPOSIT)
                 .sender("ATM")
                 .receiver(requestDto.getNumber() + "")
@@ -113,6 +113,67 @@ public class AccountService {
 
         Transaction transactionResult  = transactionRepository.save(transaction);
         return new AccountDepositResponseDto(depositAccount, transactionResult);
+    }
+
+    @Transactional
+    public AccountWithdrawResponseDto accountWithdraw(AccountWithdrawRequestDto accountWithdrawRequestDto, Long userId) {
+        // 0원 체크
+        if(accountWithdrawRequestDto.getAmount() <= 0L) {
+            throw new CustomApiException("0원 이하의 금액을 입금할 수 없습니다");
+        }
+
+        // 출금 계좌 확인
+        Account withdrawAccount = accountRepository.findByNumber(accountWithdrawRequestDto.getNumber())
+                .orElseThrow(() -> new CustomApiException("계좌를 찾을 수 없습니다"));
+
+        // 출금 소유자 확인 (로그인한 사람과 동일한지)
+        withdrawAccount.checkOwner(userId);
+
+        // 출금계좌 비밀번호 확인
+        withdrawAccount.checkSamePassword(accountWithdrawRequestDto.getPassword());
+
+        // 출금계좌 잔액 확인
+        withdrawAccount.checkBalance(accountWithdrawRequestDto.getAmount());
+
+        // 출금하기
+        withdrawAccount.withdraw(accountWithdrawRequestDto.getAmount());
+
+        // 거래내역 남기기 (내 계좌에서 ATM으로 출금)
+        Transaction transaction = Transaction.builder()
+                .withdrawAccount(withdrawAccount)
+                .withdrawAccountBalance(withdrawAccount.getBalance())
+                .depositAccount(null)
+                .depositAccountBalance(null)
+                .amount(accountWithdrawRequestDto.getAmount()) // 출금 요청 금액
+                .gubun(WITHDRAW)
+                .sender(accountWithdrawRequestDto.getNumber() + "")
+                .receiver("ATM")
+                .build();
+
+        Transaction transactionResult  = transactionRepository.save(transaction);
+
+        // DTO 응답
+        return new AccountWithdrawResponseDto(withdrawAccount, transactionResult);
+    }
+
+    @Getter
+    @Setter
+    public static class AccountWithdrawRequestDto {
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long number; // 계좌 번호
+
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long password;
+
+        @NotNull // 0원 유효성
+        private Long amount;
+
+        @NotEmpty
+        @Pattern(regexp = "^(WITHDRAW)$")
+        private String gubun;
+
     }
 
 }
