@@ -23,8 +23,9 @@ import shop.mtcoding.bank.domain.account.Account;
 import shop.mtcoding.bank.domain.account.AccountRepository;
 import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserRepository;
+import shop.mtcoding.bank.dto.account.AccountRequestDto;
+import shop.mtcoding.bank.dto.account.AccountRequestDto.AccountDepositRequestDto;
 import shop.mtcoding.bank.handler.CustomApiException;
-import shop.mtcoding.bank.service.AccountService.AccountDepositRequestDto;
 
 import javax.persistence.EntityManager;
 
