@@ -2,10 +2,13 @@ package shop.mtcoding.bank.config.dummy;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import shop.mtcoding.bank.domain.account.Account;
+import shop.mtcoding.bank.domain.transaction.Transaction;
 import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserEnum;
 
 import java.time.LocalDateTime;
+
+import static shop.mtcoding.bank.domain.transaction.TransactionEnum.DEPOSIT;
 
 public class DummyObject {
     protected User newUser(String username, String fullname) {
@@ -56,6 +59,28 @@ public class DummyObject {
                 .password(1234L)
                 .balance(balance)
                 .user(user)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+    }
+
+    // 계좌 1111L , 1000원이 있을떄
+    // 입금 트랜잭션 -> 계좌 1100원 변경 -> 입금 트랜잭션 히스토리가 생성되어야 함
+    protected static Transaction newMockDepositTransaction(Long id, Account account) {
+        LocalDateTime now = LocalDateTime.now();
+        account.deposit(100L); // 금액 추가
+
+        return Transaction.builder()
+                .id(id)
+                .depositAccount(account)
+                .depositAccountBalance(account.getBalance())
+                .withdrawAccount(null)
+                .withdrawAccountBalance(null)
+                .amount(100L)
+                .gubun(DEPOSIT)
+                .sender("ATM")
+                .receiver(account.getNumber() + "")
+                .tel("01012345678")
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
