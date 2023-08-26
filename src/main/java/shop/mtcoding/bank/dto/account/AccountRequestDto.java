@@ -51,4 +51,24 @@ public class AccountRequestDto {
         @Pattern(regexp = "^[0-9]{11}$")
         private String tel;
     }
+
+    @Getter
+    @Setter
+    public static class AccountWithdrawRequestDto {
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long number; // 계좌 번호
+
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long password;
+
+        @NotNull // 0원 유효성
+        private Long amount;
+
+        @NotEmpty
+        @Pattern(regexp = "^(WITHDRAW)$")
+        private String gubun;
+
+    }
 }
