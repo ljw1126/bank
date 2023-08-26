@@ -14,17 +14,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import shop.mtcoding.bank.config.auth.LoginUser;
 import shop.mtcoding.bank.dto.ResponseDto;
+import shop.mtcoding.bank.dto.account.AccountRequestDto;
 import shop.mtcoding.bank.dto.account.AccountRequestDto.AccountSaveRequestDto;
-import shop.mtcoding.bank.dto.account.AccountResponseDto;
 import shop.mtcoding.bank.service.AccountService;
-import shop.mtcoding.bank.service.AccountService.AccountDepositRequestDto;
-
 
 import javax.validation.Valid;
 
-import static shop.mtcoding.bank.dto.account.AccountResponseDto.*;
+import static shop.mtcoding.bank.dto.account.AccountRequestDto.*;
+import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountDepositResponseDto;
+import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountListResponseDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountSaveResponseDto;
-import static shop.mtcoding.bank.service.AccountService.*;
 
 @RestController
 @RequestMapping("/api")

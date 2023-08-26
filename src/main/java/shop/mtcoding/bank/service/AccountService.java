@@ -13,6 +13,8 @@ import shop.mtcoding.bank.domain.transaction.TransactionEnum;
 import shop.mtcoding.bank.domain.transaction.TransactionRepository;
 import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserRepository;
+import shop.mtcoding.bank.dto.account.AccountRequestDto;
+import shop.mtcoding.bank.dto.account.AccountResponseDto;
 import shop.mtcoding.bank.dto.account.AccountResponseDto.AccountListResponseDto;
 import shop.mtcoding.bank.handler.CustomApiException;
 import shop.mtcoding.bank.util.CustomDateUtil;
@@ -25,7 +27,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static shop.mtcoding.bank.domain.transaction.TransactionEnum.*;
+import static shop.mtcoding.bank.dto.account.AccountRequestDto.*;
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountSaveRequestDto;
+import static shop.mtcoding.bank.dto.account.AccountResponseDto.*;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountSaveResponseDto;
 
 @Service
@@ -88,7 +92,7 @@ public class AccountService {
         }
 
         // 입금 계좌 확인
-        Account depositAccount = accountRepository.findByNumber(requestDto.number)
+        Account depositAccount = accountRepository.findByNumber(requestDto.getNumber())
                 .orElseThrow(() -> new CustomApiException("계좌를 찾을 수 없습니다"));
 
         // 입금 (해당 계좌 balance 조정 - update문 - 더티체킹)
@@ -111,62 +115,4 @@ public class AccountService {
         return new AccountDepositResponseDto(depositAccount, transactionResult);
     }
 
-    @Getter
-    @Setter
-    public static class AccountDepositResponseDto { // ATM 입금 응답
-        private Long id; // 계좌 id
-        private Long number; // 계좌 번호
-        private TransactionDto transactionDto;
-
-        public AccountDepositResponseDto(Account account, Transaction transaction) {
-            this.id = account.getId();
-            this.number = account.getNumber();
-            this.transactionDto = new TransactionDto(transaction);
-        }
-
-        @Getter
-        @Setter
-        public class TransactionDto {
-            private Long id;
-            private String gubun;
-            private String sender;
-            private String reciver;
-            private Long amount;
-            private String tel;
-            private String createAt;
-
-            @JsonIgnore
-            private Long depositAccountBalance;
-
-            public TransactionDto(Transaction transaction) {
-                this.id = transaction.getId();
-                this.gubun = transaction.getGubun().getValue();
-                this.sender = transaction.getSender();
-                this.reciver = transaction.getReceiver();
-                this.amount = transaction.getAmount();
-                this.depositAccountBalance = transaction.getDepositAccountBalance();
-                this.tel = transaction.getTel();
-                this.createAt = CustomDateUtil.toStringFormat(transaction.getCreatedAt());
-            }
-        }
-    }
-
-    @Getter
-    @Setter
-    public static class AccountDepositRequestDto {
-        @NotNull
-        @Digits(integer = 4, fraction = 4)
-        private Long number; // 계좌 번호
-
-        @NotNull // 0원 유효성
-        private Long amount;
-
-        @NotEmpty
-        @Pattern(regexp = "^(DEPOSIT)$")
-        private String gubun;
-
-        @NotEmpty
-        @Pattern(regexp = "^[0-9]{11}$")
-        private String tel;
-    }
 }
