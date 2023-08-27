@@ -19,6 +19,7 @@ import shop.mtcoding.bank.domain.transaction.Transaction;
 import shop.mtcoding.bank.domain.transaction.TransactionRepository;
 import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserRepository;
+import shop.mtcoding.bank.dto.account.AccountRequestDto;
 import shop.mtcoding.bank.handler.CustomApiException;
 
 import java.util.Optional;
@@ -27,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static shop.mtcoding.bank.dto.account.AccountRequestDto.*;
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountDepositRequestDto;
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountSaveRequestDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountDepositResponseDto;
@@ -243,7 +245,52 @@ class AccountServiceTest extends DummyObject {
         assertThat(ssarAccount.getBalance()).isEqualTo(900L);
     }
 
-    // TODO. 계좌 이체
+    @DisplayName("계좌 이체")
+    @Test
+    void accountTransfer() {
+        //given
+        Long userId = 1L;
+        AccountTransferRequestDto requestDto = new AccountTransferRequestDto();
+        requestDto.setWithdrawNumber(1111L);
+        requestDto.setDepositNumber(2222L);
+        requestDto.setWithdrawPassword(1234L);
+        requestDto.setAmount(100L);
+        requestDto.setGubun("TRANSFER");
+
+        User ssar = newMockUser(1L, "ssar", "쌀");
+        User cos = newMockUser(2L, "cos", "코스");
+        Account withdrawAccount = newMockAccount(1L, 1111L, 1000L, ssar);
+        Account depositAccount = newMockAccount(2L, 2222L, 1000L, cos);
+
+        //when
+        // 출금 계좌와 입금계좌가 동일하면 안됨
+        if(requestDto.getWithdrawNumber().longValue() == requestDto.getDepositNumber().longValue()) {
+            throw new CustomApiException("입출금계좌가 동일할 수 없습니다");
+        }
+
+        // 0원 체크
+        if(requestDto.getAmount() <= 0L) {
+            throw new CustomApiException("0원 이하의 금액을 입금할 수 없습니다");
+        }
+
+        // 출금 소유자 확인(로그인한 사람과 동일한지)
+        withdrawAccount.checkOwner(userId);
+
+        // 출금 계좌 비밀번호 확인
+        withdrawAccount.checkSamePassword(requestDto.getWithdrawPassword());
+
+        // 출금 계좌 잔액 확인
+        withdrawAccount.checkBalance(requestDto.getAmount());
+
+        // 이체 하기
+        withdrawAccount.withdraw(requestDto.getAmount());
+        depositAccount.deposit(requestDto.getAmount());
+
+        //then
+        assertThat(withdrawAccount.getBalance()).isEqualTo(900L);
+        assertThat(depositAccount.getBalance()).isEqualTo(1100L);
+    }
+
 
     // TODO. 계좌 목록보기 (유저별 테스트)
 
