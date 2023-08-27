@@ -168,4 +168,55 @@ public class AccountResponseDto {
             }
         }
     }
+
+    @Getter
+    @Setter
+    public static class AccountDetailResponseDto {
+        private Long id; // 계좌 id
+        private Long number; // 계좌 번호
+        private Long balance; // 잔액
+        private List<TransactionDto> transactions = new ArrayList<>(); // 내역
+
+        public AccountDetailResponseDto(Account account, List<Transaction> transactions) {
+            this.id = account.getId();
+            this.number = account.getNumber();
+            this.balance = account.getBalance();
+            this.transactions = transactions.stream().map(t -> new TransactionDto(t, account.getNumber())).collect(Collectors.toList());
+        }
+
+        @Getter
+        @Setter
+        public class TransactionDto {
+            private Long id;
+            private String gubun;
+            private Long amount;
+            private String sender;
+            private String reciver;
+            private String tel;
+            private String createdAt;
+            private Long balance; // 잔액
+
+            public TransactionDto(Transaction transaction, Long accountNumber) {
+                this.id = transaction.getId();
+                this.gubun = transaction.getGubun().getValue();
+                this.amount = transaction.getAmount();
+                this.sender = transaction.getSender();
+                this.reciver = transaction.getReceiver();
+                this.createdAt = CustomDateUtil.toStringFormat(transaction.getCreatedAt());
+                this.tel = transaction.getTel() == null ? "없음" : transaction.getTel();
+
+                if (transaction.getDepositAccount() == null) { // 입금 == null 이면 출금
+                    this.balance = transaction.getWithdrawAccountBalance();
+                } else if (transaction.getWithdrawAccount() == null) { // 출금 == null 이면 입금
+                    this.balance = transaction.getDepositAccountBalance();
+                } else { // 계좌 이체
+                    if (accountNumber.longValue() == transaction.getDepositAccount().getNumber()) { // 입금
+                        this.balance = transaction.getDepositAccountBalance();
+                    } else { // 출금
+                        this.balance = transaction.getWithdrawAccountBalance();
+                    }
+                }
+            }
+        }
+    }
 }
