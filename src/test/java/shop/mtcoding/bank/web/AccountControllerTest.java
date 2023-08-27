@@ -21,6 +21,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import shop.mtcoding.bank.config.dummy.DummyObject;
 import shop.mtcoding.bank.domain.account.Account;
 import shop.mtcoding.bank.domain.account.AccountRepository;
+import shop.mtcoding.bank.domain.transaction.Transaction;
+import shop.mtcoding.bank.domain.transaction.TransactionRepository;
 import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserRepository;
 import shop.mtcoding.bank.dto.account.AccountRequestDto.AccountDepositRequestDto;
@@ -60,24 +62,15 @@ class AccountControllerTest extends DummyObject {
     private AccountRepository accountRepository;
 
     @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
     private EntityManager em;
 
     @BeforeEach
     void setUp() {
-        dateSetting();
+        dataSetting();
         em.clear(); // 영속성 컨텍스트 비움
-    }
-
-    private void dateSetting() {
-        User ssar = userRepository.save(newUser("ssar", "쌀"));
-        User cos = userRepository.save(newUser("cos", "코스,"));
-        User love = userRepository.save(newUser("love", "러브"));
-        User admin = userRepository.save(newUser("admin", "관리자"));
-
-        Account ssarAccount1 = accountRepository.save(newAccount(1111L, ssar));
-        Account cosAccount = accountRepository.save(newAccount(2222L, cos));
-        Account loveAccount = accountRepository.save(newAccount(3333L, love));
-        Account ssarAccount2 = accountRepository.save(newAccount(4444L, ssar));
     }
 
     // jwt token -> 인증 필터 -> 시큐리티 세션 생성
@@ -123,7 +116,7 @@ class AccountControllerTest extends DummyObject {
                 .andExpect(jsonPath("$.data.accounts.length()", is(2)));
     }
 
-    @DisplayName("")
+    @DisplayName("계좌 삭제")
     @WithUserDetails(value = "ssar", setupBefore = TEST_EXECUTION)
     @Test
     void deleteAccount() throws Exception {
@@ -306,7 +299,7 @@ class AccountControllerTest extends DummyObject {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.code").value("1"))
                 .andExpect(jsonPath("$.msg").value("계좌 출금 완료"))
-                .andExpect(jsonPath("$.data.balance").value("900"));
+                .andExpect(jsonPath("$.data.balance").value("700"));
     }
 
     @WithUserDetails(value = "ssar", setupBefore = TEST_EXECUTION)
@@ -331,6 +324,57 @@ class AccountControllerTest extends DummyObject {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.code").value("1"))
                 .andExpect(jsonPath("$.msg").value("계좌 이체 완료"))
-                .andExpect(jsonPath("$.data.balance").value("900"));
+                .andExpect(jsonPath("$.data.balance").value(700L));
+    }
+
+    @WithUserDetails(value = "ssar", setupBefore = TEST_EXECUTION)
+    @DisplayName("계좌 상세 조회")
+    @Test
+    void accountDetail() throws Exception {
+        //given
+        Long number = 1111L; // 조회 계좌 번호
+        String page = "0";
+
+        //when
+        ResultActions resultActions = mockMvc.perform(get("/api/s/account/" + number + "/detail")
+                .param("page", page)
+        );
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+
+        //then
+        resultActions.andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("1"))
+                .andExpect(jsonPath("$.msg").value("계좌 상세 조회 완료"))
+                .andExpect(jsonPath("$.data.number").value("1111"))
+                .andExpect(jsonPath("$.data.balance").value("800"))
+                .andExpect(jsonPath("$.data.transactions[0].balance").value(900L))
+                .andExpect(jsonPath("$.data.transactions[1].balance").value(800L))
+                .andExpect(jsonPath("$.data.transactions[2].balance").value(700L))
+                .andExpect(jsonPath("$.data.transactions[3].balance").value(800L));
+    }
+
+    private void dataSetting() {
+        User ssar = userRepository.save(newUser("ssar", "쌀"));
+        User cos = userRepository.save(newUser("cos", "코스,"));
+        User love = userRepository.save(newUser("love", "러브"));
+        User admin = userRepository.save(newUser("admin", "관리자"));
+
+        Account ssarAccount1 = accountRepository.save(newAccount(1111L, ssar));
+        Account cosAccount = accountRepository.save(newAccount(2222L, cos));
+        Account loveAccount = accountRepository.save(newAccount(3333L, love));
+        Account ssarAccount2 = accountRepository.save(newAccount(4444L, ssar));
+
+        // 100원씩
+        Transaction withdrawTransaction1 = transactionRepository
+                .save(newWithdrawTransaction(ssarAccount1, accountRepository));
+        Transaction depositTransaction1 = transactionRepository
+                .save(newDepositTransaction(cosAccount, accountRepository));
+        Transaction transferTransaction1 = transactionRepository
+                .save(newTransferTransaction(ssarAccount1, cosAccount, accountRepository));
+        Transaction transferTransaction2 = transactionRepository
+                .save(newTransferTransaction(ssarAccount1, loveAccount, accountRepository));
+        Transaction transferTransaction3 = transactionRepository
+                .save(newTransferTransaction(cosAccount, ssarAccount1, accountRepository));
     }
 }
