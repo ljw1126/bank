@@ -19,7 +19,6 @@ import shop.mtcoding.bank.domain.transaction.Transaction;
 import shop.mtcoding.bank.domain.transaction.TransactionRepository;
 import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserRepository;
-import shop.mtcoding.bank.dto.account.AccountRequestDto;
 import shop.mtcoding.bank.handler.CustomApiException;
 
 import java.util.Optional;
@@ -33,7 +32,6 @@ import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountDepositReq
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountSaveRequestDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountDepositResponseDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountSaveResponseDto;
-import static shop.mtcoding.bank.service.AccountService.*;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest extends DummyObject {
@@ -71,7 +69,7 @@ class AccountServiceTest extends DummyObject {
         when(accountRepository.findByNumber(any())).thenReturn(Optional.empty());
 
         //stub3
-        Account mockAccount = newMockAccount(1L, 1111L, 1000L, dummyUser);
+        Account mockAccount = newAccount(1L, 1111L, 1000L, dummyUser);
         when(accountRepository.save(any())).thenReturn(mockAccount);
 
         //when
@@ -117,7 +115,7 @@ class AccountServiceTest extends DummyObject {
             when(userRepository.findById(any())).thenReturn(Optional.of(mockUser));
 
             //stub
-            Account dummyAccount = newMockAccount(accountNumber, mockUser);
+            Account dummyAccount = newAccount(accountNumber, mockUser);
             when(accountRepository.findByNumber(any())).thenReturn(Optional.of(dummyAccount));
 
 
@@ -135,7 +133,7 @@ class AccountServiceTest extends DummyObject {
 
             //stub
             User user = newMockUser(1L, "ssar", "쌀");
-            Account ssarAccount = newMockAccount(1L, 111L, 1000L, user);
+            Account ssarAccount = newAccount(1L, 111L, 1000L, user);
             when(accountRepository.findByNumber(any())).thenReturn(Optional.of(ssarAccount));
 
             //when
@@ -160,11 +158,11 @@ class AccountServiceTest extends DummyObject {
 
         //stub1
         User ssar = newMockUser(1L, "ssar", "쌀");
-        Account ssarAccount = newMockAccount(1L, 1111L, 1000L, ssar); // 실행됨 -- 1000원
+        Account ssarAccount = newAccount(1L, 1111L, 1000L, ssar); // 실행됨 -- 1000원
         when(accountRepository.findByNumber(any())).thenReturn(Optional.of(ssarAccount)); // 실행 안됨
 
         //stub2
-        Account ssarAccount2 = newMockAccount(1L, 1111L, 1000L, ssar);
+        Account ssarAccount2 = newAccount(1L, 1111L, 1000L, ssar);
         ;
         Transaction transaction = newMockDepositTransaction(1L, ssarAccount2); // 실행됨 -- 1100원
         when(transactionRepository.save(any())).thenReturn(transaction); // 실행안됨
@@ -204,7 +202,7 @@ class AccountServiceTest extends DummyObject {
     @Test
     void accountDeposit3() throws Exception {
         //given
-        Account account = newMockAccount(1L, 1111L, 1000L, null);
+        Account account = newAccount(1L, 1111L, 1000L, null);
         Long amount = 100L;
 
         //when
@@ -229,7 +227,7 @@ class AccountServiceTest extends DummyObject {
         Long password = 1234L;
 
         User ssar = newMockUser(1L, "ssar", "쌀");
-        Account ssarAccount = newMockAccount(1L, 1111L, 1000L, ssar);
+        Account ssarAccount = newAccount(1L, 1111L, 1000L, ssar);
 
         //when
         if(amount <= 0L) {
@@ -259,8 +257,8 @@ class AccountServiceTest extends DummyObject {
 
         User ssar = newMockUser(1000L, "ssar", "쌀");
         User cos = newMockUser(2000L, "cos", "코스");
-        Account withdrawAccount = newMockAccount(1L, 1111L, 1000L, ssar);
-        Account depositAccount = newMockAccount(2L, 2222L, 1000L, cos);
+        Account withdrawAccount = newAccount(1L, 1111L, 1000L, ssar);
+        Account depositAccount = newAccount(2L, 2222L, 1000L, cos);
 
         //when
         // 출금 계좌와 입금계좌가 동일하면 안됨
