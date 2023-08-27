@@ -71,4 +71,28 @@ public class AccountRequestDto {
         private String gubun;
 
     }
+
+    @Getter
+    @Setter
+    public static class AccountTransferRequestDto {
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long withdrawNumber; // 출금 계좌 번호
+
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long depositNumber; // 입금 계좌 번호
+
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long withdrawPassword;
+
+        @NotNull // 0원 유효성
+        private Long amount;
+
+        @NotEmpty
+        @Pattern(regexp = "^(TRANSFER)$")
+        private String gubun;
+
+    }
 }

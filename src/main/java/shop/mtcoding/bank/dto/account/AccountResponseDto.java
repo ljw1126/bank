@@ -129,4 +129,43 @@ public class AccountResponseDto {
         }
     }
 
+    @Getter
+    @Setter
+    public static class AccountTransferResponseDto { // 계좌 이체 응답
+        private Long id; // 출금 계좌 id
+        private Long number; // 출금 계좌 번호
+        private Long balance; // 출금 계좌 잔액
+        private TransactionDto transactionDto;
+
+        public AccountTransferResponseDto(Account account, Transaction transaction) { // 출금계좌, 거래내역
+            this.id = account.getId();
+            this.number = account.getNumber();
+            this.balance = account.getBalance();
+            this.transactionDto = new TransactionDto(transaction);
+        }
+
+        @Getter
+        @Setter
+        public class TransactionDto {
+            private Long id;
+            private String gubun;
+            private String sender;
+            private String reciver;
+            private Long amount;
+            private String createAt;
+
+            @JsonIgnore
+            private Long depositAccountBalance; // 입금 계좌 잔액
+
+            public TransactionDto(Transaction transaction) {
+                this.id = transaction.getId();
+                this.gubun = transaction.getGubun().getValue();
+                this.sender = transaction.getSender();
+                this.reciver = transaction.getReceiver();
+                this.amount = transaction.getAmount();
+                this.createAt = CustomDateUtil.toStringFormat(transaction.getCreatedAt());
+                this.depositAccountBalance = transaction.getDepositAccountBalance();
+            }
+        }
+    }
 }
