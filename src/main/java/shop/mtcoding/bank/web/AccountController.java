@@ -20,10 +20,12 @@ import shop.mtcoding.bank.service.AccountService;
 import javax.validation.Valid;
 
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountDepositRequestDto;
+import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountTransferRequestDto;
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountWithdrawRequestDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountDepositResponseDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountListResponseDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountSaveResponseDto;
+import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountTransferResponseDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountWithdrawResponseDto;
 
 @RestController
@@ -69,5 +71,14 @@ public class AccountController {
     ) {
         AccountWithdrawResponseDto response = accountService.accountWithdraw(withdrawRequestDto, loginUser.getUser().getId());
         return new ResponseEntity<>(new ResponseDto<>(1, "계좌 출금 완료", response), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/s/account/transfer")
+    public ResponseEntity<ResponseDto> accountTransfer(@RequestBody @Valid AccountTransferRequestDto accountTransferRequestDto
+            , BindingResult bindingResult
+            , @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        AccountTransferResponseDto response = accountService.accountTransfer(accountTransferRequestDto, loginUser.getUser().getId());
+        return new ResponseEntity<>(new ResponseDto<>(1, "계좌 이체 완료", response), HttpStatus.CREATED);
     }
 }
