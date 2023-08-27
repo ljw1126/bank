@@ -18,14 +18,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import shop.mtcoding.bank.config.dummy.DummyObject;
 import shop.mtcoding.bank.domain.account.Account;
 import shop.mtcoding.bank.domain.account.AccountRepository;
 import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserRepository;
-import shop.mtcoding.bank.dto.account.AccountRequestDto;
 import shop.mtcoding.bank.dto.account.AccountRequestDto.AccountDepositRequestDto;
 import shop.mtcoding.bank.handler.CustomApiException;
 
@@ -37,13 +34,12 @@ import static org.springframework.security.test.context.support.TestExecutionEve
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static shop.mtcoding.bank.dto.account.AccountRequestDto.*;
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountSaveRequestDto;
+import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountTransferRequestDto;
+import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountWithdrawRequestDto;
 
 @Sql("classpath:/db/teardown.sql")
 @ActiveProfiles("test")
@@ -310,6 +306,31 @@ class AccountControllerTest extends DummyObject {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.code").value("1"))
                 .andExpect(jsonPath("$.msg").value("계좌 출금 완료"))
+                .andExpect(jsonPath("$.data.balance").value("900"));
+    }
+
+    @WithUserDetails(value = "ssar", setupBefore = TEST_EXECUTION)
+    @DisplayName("계좌 이체")
+    @Test
+    void accountTransfer() throws Exception {
+        //given
+        AccountTransferRequestDto requestDto = new AccountTransferRequestDto();
+        requestDto.setWithdrawNumber(1111L);
+        requestDto.setDepositNumber(2222L);
+        requestDto.setWithdrawPassword(1234L);
+        requestDto.setAmount(100L);
+        requestDto.setGubun("TRANSFER");
+
+        String requestBody = objectMapper.writeValueAsString(requestDto);
+
+        //when then
+        mockMvc.perform(post("/api/s/account/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)
+                ).andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.code").value("1"))
+                .andExpect(jsonPath("$.msg").value("계좌 이체 완료"))
                 .andExpect(jsonPath("$.data.balance").value("900"));
     }
 }
