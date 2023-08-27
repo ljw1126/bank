@@ -1,6 +1,5 @@
 package shop.mtcoding.bank.domain.transaction;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,11 +12,9 @@ import shop.mtcoding.bank.domain.user.User;
 import shop.mtcoding.bank.domain.user.UserRepository;
 
 import javax.persistence.EntityManager;
-
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 class TransactionRepositoryImplTest extends DummyObject {
@@ -93,7 +90,7 @@ class TransactionRepositoryImplTest extends DummyObject {
             System.out.println("테스트 : reciver " + t.getReceiver());
             System.out.println("테스트 : withdrawAccount 잔액 " + t.getWithdrawAccountBalance());
             System.out.println("테스트 : depositAccount 잔액 " + t.getDepositAccountBalance());
-         
+
             System.out.println("=====================");
         });
 
