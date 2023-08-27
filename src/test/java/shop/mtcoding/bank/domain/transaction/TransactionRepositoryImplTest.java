@@ -1,5 +1,6 @@
 package shop.mtcoding.bank.domain.transaction;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import javax.persistence.EntityManager;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
@@ -69,6 +71,29 @@ class TransactionRepositoryImplTest extends DummyObject {
             System.out.println("테스트 : " + t.getReceiver());
             System.out.println("테스트 : " + t.getGubun());
             System.out.println("==========================");
+        });
+    }
+
+    @DisplayName("")
+    @Test
+    void findTransactionListAll() {
+        //given
+        Long accountId = 1L;
+
+        //when
+        List<Transaction> transactionList = transactionRepository.findTransactionList(accountId, "ALL", 0);
+
+        //then
+        assertThat(transactionList).hasSize(5);
+        transactionList.forEach((t) -> {
+            System.out.println("테스트 : id " + t.getId());
+            System.out.println("테스트 : amount " + t.getAmount());
+            System.out.println("테스트 : sender " + t.getSender());
+            System.out.println("테스트 : reciver " + t.getReceiver());
+            System.out.println("테스트 : withdrawAccount " + t.getWithdrawAccount());
+            System.out.println("테스트 : depositAccount " + t.getDepositAccount());
+
+            System.out.println("=====================");
         });
     }
 
