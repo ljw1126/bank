@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h1>로그인 페이지</h1>
+    <hr>
+    <form>
+        <input type="text" id="username"><br/>
+        <input type="password" id="password"><br/>
+        <button type="button" onclick="login()">로그인</button>
+    </form>
+
+    <script>
+        // async란 ? await 지점을 기억한채로 login 함수의 스택을 빠져나와라
+        async function login() {
+            const userDto = {
+                username : document.querySelector("#username").value,
+                password : document.querySelector("#password").value
+            }
+
+            console.log(userDto);
+
+            let response = await fetch("http://localhost:8081/api/login", {
+                method : "post",
+                body : JSON.stringify(userDto),
+                headers : {
+                    "Content-Type" : "application/json; charset=utf-8"
+                }
+            });
+
+            let r2 = await response.json();
+            console.log(r2);
+
+            let token = response.headers.get("Authorization");
+            console.log(token);
+        }
+        // 빠져나옴 (async) :
+    </script>
+</body>
+</html>
