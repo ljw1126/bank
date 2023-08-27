@@ -38,6 +38,8 @@ class TransactionRepositoryImplTest extends DummyObject {
     void setUp() {
         autoincrementReset();
         dataSetting();
+        em.flush();
+        em.clear();
     }
 
     @DisplayName("")
@@ -84,17 +86,18 @@ class TransactionRepositoryImplTest extends DummyObject {
         List<Transaction> transactionList = transactionRepository.findTransactionList(accountId, "ALL", 0);
 
         //then
-        assertThat(transactionList).hasSize(5);
         transactionList.forEach((t) -> {
             System.out.println("테스트 : id " + t.getId());
             System.out.println("테스트 : amount " + t.getAmount());
             System.out.println("테스트 : sender " + t.getSender());
             System.out.println("테스트 : reciver " + t.getReceiver());
-            System.out.println("테스트 : withdrawAccount " + t.getWithdrawAccount());
-            System.out.println("테스트 : depositAccount " + t.getDepositAccount());
-
+            System.out.println("테스트 : withdrawAccount 잔액 " + t.getWithdrawAccountBalance());
+            System.out.println("테스트 : depositAccount 잔액 " + t.getDepositAccountBalance());
+         
             System.out.println("=====================");
         });
+
+        assertThat(transactionList.get(3).getDepositAccountBalance()).isEqualTo(800L);
     }
 
     private void dataSetting() {
@@ -108,16 +111,17 @@ class TransactionRepositoryImplTest extends DummyObject {
         Account loveAccount = accountRepository.save(newAccount(3333L, love));
         Account ssarAccount2 = accountRepository.save(newAccount(4444L, ssar));
 
+        // 100원씩
         Transaction withdrawTransaction1 = transactionRepository
-                .save(newWithdrawTransaction(ssarAccount1, accountRepository)); // 100원 출금 -> 900원
+                .save(newWithdrawTransaction(ssarAccount1, accountRepository));
         Transaction depositTransaction1 = transactionRepository
-                .save(newDepositTransaction(ssarAccount1, accountRepository)); // 100원 입금 -> 1000원
+                .save(newDepositTransaction(cosAccount, accountRepository));
         Transaction transferTransaction1 = transactionRepository
-                .save(newTransferTransaction(ssarAccount1, cosAccount, accountRepository)); // 100원 이체 (ssar : 900원, cos : 1100원)
+                .save(newTransferTransaction(ssarAccount1, cosAccount, accountRepository));
         Transaction transferTransaction2 = transactionRepository
-                .save(newTransferTransaction(ssarAccount1, loveAccount, accountRepository)); // 100원 이체 (ssar : 800원, love : 1100원)
+                .save(newTransferTransaction(ssarAccount1, loveAccount, accountRepository));
         Transaction transferTransaction3 = transactionRepository
-                .save(newTransferTransaction(cosAccount, ssarAccount1, accountRepository)); // 100원 이체, (cos : 1000원, ssar : 900원)
+                .save(newTransferTransaction(cosAccount, ssarAccount1, accountRepository));
     }
 
     // 전체 테스트 실행시 auto increase 초기화
