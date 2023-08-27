@@ -110,6 +110,7 @@ public class DummyObject {
     protected Transaction newDepositTransaction(Account account, AccountRepository accountRepository) {
         account.deposit(100L);
         // 더티체킹이 안되기 때문에!!
+        // Repository 테스트에서는 더티체킹 동작하나, Controller 테스트에서는 동작 안함
         if (accountRepository != null) {
             accountRepository.save(account);
         }
