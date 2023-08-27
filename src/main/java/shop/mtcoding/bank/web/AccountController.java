@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import shop.mtcoding.bank.config.auth.LoginUser;
 import shop.mtcoding.bank.dto.ResponseDto;
@@ -23,6 +24,7 @@ import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountDepositReq
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountTransferRequestDto;
 import static shop.mtcoding.bank.dto.account.AccountRequestDto.AccountWithdrawRequestDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountDepositResponseDto;
+import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountDetailResponseDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountListResponseDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountSaveResponseDto;
 import static shop.mtcoding.bank.dto.account.AccountResponseDto.AccountTransferResponseDto;
@@ -80,5 +82,15 @@ public class AccountController {
     ) {
         AccountTransferResponseDto response = accountService.accountTransfer(accountTransferRequestDto, loginUser.getUser().getId());
         return new ResponseEntity<>(new ResponseDto<>(1, "계좌 이체 완료", response), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/s/account/{number}/detail")
+    public ResponseEntity<ResponseDto> accountDetail(
+            @PathVariable Long number,
+            @RequestParam("page") Integer page,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        AccountDetailResponseDto responseDto = accountService.accountDetail(number, loginUser.getUser().getId(), page);
+        return new ResponseEntity<>(new ResponseDto<>(1, "계좌 상세 조회 완료", responseDto), HttpStatus.OK);
     }
 }
