@@ -249,7 +249,7 @@ class AccountServiceTest extends DummyObject {
     @Test
     void accountTransfer() {
         //given
-        Long userId = 1L;
+        Long userId = 1000L;
         AccountTransferRequestDto requestDto = new AccountTransferRequestDto();
         requestDto.setWithdrawNumber(1111L);
         requestDto.setDepositNumber(2222L);
@@ -257,8 +257,8 @@ class AccountServiceTest extends DummyObject {
         requestDto.setAmount(100L);
         requestDto.setGubun("TRANSFER");
 
-        User ssar = newMockUser(1L, "ssar", "쌀");
-        User cos = newMockUser(2L, "cos", "코스");
+        User ssar = newMockUser(1000L, "ssar", "쌀");
+        User cos = newMockUser(2000L, "cos", "코스");
         Account withdrawAccount = newMockAccount(1L, 1111L, 1000L, ssar);
         Account depositAccount = newMockAccount(2L, 2222L, 1000L, cos);
 
